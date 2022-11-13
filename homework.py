@@ -29,7 +29,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """отправляет сообщение в Telegram"""
+    """отправляет сообщение в Telegram."""
     try:
         logging.info(f'Сообщение от бота {message}')
         bot.send_message(TELEGRAM_CHAT_ID, message)
@@ -38,7 +38,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """Отправляем запрос"""
+    """Отправляем запрос."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     logging.info(f'Отправка запроса {ENDPOINT} с параметрами {params}')
@@ -49,7 +49,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверка полученного ответа"""
+    """Проверка полученного ответа."""
     if not response:
         message = 'содержит пустой словарь'
         logging.error(message)
@@ -74,7 +74,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Статус домашней работы"""
+    """Статус домашней работы."""
     if not homework.get('homework_name'):
         homework_name = 'NoNaMe'
         logging.warning('Отсутствует имя домашней работы.')
@@ -96,7 +96,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """проверяет доступность переменных окружения необходимых для работы"""
+    """проверяет доступность переменных окружения необходимых для работы."""
     env_list = [
         PRACTICUM_TOKEN,
         TELEGRAM_TOKEN,
