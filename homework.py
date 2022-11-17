@@ -34,7 +34,7 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info(f'Сообщение от бота {message}, успешно отправлено')
     except telegram.TelegramError as error:
-        logging.error(error)
+        raise telegram.TelegramError(f'Ошибка отправки сообщения: {error}')
 
 
 def get_api_answer(current_timestamp):
@@ -54,19 +54,13 @@ def check_response(response):
         raise KeyError('содержит пустой словарь')
 
     if not isinstance(response, dict):
-        message = 'имеет некорректный тип'
-        # logging.error(message)
-        raise TypeError(message)
+        raise TypeError('имеет некорректный тип')
 
     if 'homeworks' not in response:
-        message = 'отсутствие ожидаемых ключей в ответе'
-        # logging.error(message)
-        raise KeyError(message)
+        raise KeyError('отсутствие ожидаемых ключей в ответе')
 
     if not isinstance(response.get('homeworks'), list):
-        message = 'формат ответа не соответствует'
-        # logging.error(message)
-        raise CheckResponseError(message)
+        raise CheckResponseError('формат ответа не соответствует')
 
     return response['homeworks']
 
@@ -117,23 +111,14 @@ def main():
             homeworks = check_response(response)
             if len(homeworks) == 0:
                 logging.debug('Ответ API пуст: нет домашних работ.')
-            """"""
-            message = parse_status(homeworks[len(homeworks)])
-            send_message(bot, message)
-            """
-            for homework in homeworks:
-                message = parse_status(homework)
-                if last_send.get(homework['homework_name']) != message:
-                    send_message(bot, message)
-                    last_send[homework['homework_name']] = message
-            """
+            else:
+                message = parse_status(homeworks[-1])
+                send_message(bot, message)
             current_timestamp = response.get('current_date')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if last_send['error'] != message:
-                """"""
                 send_message(bot, message)
-                """"""
                 last_send['error'] = message
             logging.error(last_send['error'])
         else:
