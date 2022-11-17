@@ -21,7 +21,7 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 
-HOMEWORK_STATUSES = {
+HOMEWORK_VERDIKT = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -31,9 +31,9 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """отправляет сообщение в Telegram."""
     try:
-        logging.info(f'Сообщение от бота {message}')
         bot.send_message(TELEGRAM_CHAT_ID, message)
-    except Exception as error:
+        logging.info(f'Сообщение от бота {message}, успешно отправлено')
+    except telegram.TelegramError as error:
         logging.error(error)
 
 
@@ -51,23 +51,21 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверка полученного ответа."""
     if not response:
-        message = 'содержит пустой словарь'
-        logging.error(message)
-        raise KeyError(message)
+        raise KeyError('содержит пустой словарь')
 
     if not isinstance(response, dict):
         message = 'имеет некорректный тип'
-        logging.error(message)
+        # logging.error(message)
         raise TypeError(message)
 
     if 'homeworks' not in response:
         message = 'отсутствие ожидаемых ключей в ответе'
-        logging.error(message)
+        # logging.error(message)
         raise KeyError(message)
 
     if not isinstance(response.get('homeworks'), list):
         message = 'формат ответа не соответствует'
-        logging.error(message)
+        # logging.error(message)
         raise CheckResponseError(message)
 
     return response['homeworks']
@@ -75,23 +73,17 @@ def check_response(response):
 
 def parse_status(homework):
     """Статус домашней работы."""
+    homework_name = homework.get('homework_name')
     if not homework.get('homework_name'):
-        homework_name = 'NoNaMe'
-        logging.warning('Отсутствует имя домашней работы.')
-    else:
-        homework_name = homework.get('homework_name')
+        raise KeyError('Отсутствует имя домашней работы.')
 
     homework_status = homework.get('status')
     if 'status' not in homework:
-        message = 'Отсутстует ключ homework_status'
-        logging.error(message)
-        raise ParseStatusError(message)
+        raise ParseStatusError('Отсутстует ключ homework_status')
 
-    verdict = HOMEWORK_STATUSES.get(homework_status)
-    if homework_status not in HOMEWORK_STATUSES:
-        message = 'Недокументированный статус домашней работы'
-        logging.error(message)
-        raise KeyError(message)
+    verdict = HOMEWORK_VERDIKT.get(homework_status)
+    if homework_status not in HOMEWORK_VERDIKT:
+        raise KeyError('Недокументированный статус домашней работы')
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
@@ -102,7 +94,6 @@ def check_tokens():
         TELEGRAM_TOKEN,
         TELEGRAM_CHAT_ID
     ]
-    print(all(env_list))
     return all(env_list)
 
 
@@ -112,11 +103,10 @@ def main():
         'error': None,
     }
     if not check_tokens():
-        logging.critical(
+        sys.exit(
             'Отсутствует обязательная переменная окружения.\n'
             'Программа принудительно остановлена.'
         )
-        exit()
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
@@ -127,18 +117,25 @@ def main():
             homeworks = check_response(response)
             if len(homeworks) == 0:
                 logging.debug('Ответ API пуст: нет домашних работ.')
-                break
+            """"""
+            message = parse_status(homeworks[len(homeworks)])
+            send_message(bot, message)
+            """
             for homework in homeworks:
                 message = parse_status(homework)
                 if last_send.get(homework['homework_name']) != message:
                     send_message(bot, message)
                     last_send[homework['homework_name']] = message
+            """
             current_timestamp = response.get('current_date')
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if last_send['error'] != message:
+                """"""
                 send_message(bot, message)
+                """"""
                 last_send['error'] = message
+            logging.error(last_send['error'])
         else:
             last_send['error'] = None
         finally:

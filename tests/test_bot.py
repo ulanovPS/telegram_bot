@@ -7,7 +7,8 @@ import utils
 
 
 class MockResponseGET:
-
+    '''Some docstring here'''
+    
     def __init__(self, url, params=None, random_timestamp=None,
                  current_timestamp=None, http_status=HTTPStatus.OK, **kwargs):
         assert (
@@ -54,7 +55,7 @@ class MockResponseGET:
 
 
 class MockTelegramBot:
-
+    '''Some docstring here'''
     def __init__(self, token=None, random_timestamp=None, **kwargs):
         assert token is not None, (
             'Проверьте, что вы передали токен бота Telegram'
@@ -74,6 +75,8 @@ class MockTelegramBot:
 
 
 class TestHomework:
+    '''Some docstring here'''
+
     HOMEWORK_STATUSES = {
         'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
         'reviewing': 'Работа взята на проверку ревьюером.',

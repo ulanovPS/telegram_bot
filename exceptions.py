@@ -1,5 +1,8 @@
 class HTTPRequestError(Exception):
+    """Обработчик ошибки."""
+
     def __init__(self, response):
+        """Ошибка отправки запроса."""
         message = (
             f'{response.url} Эндпоинт недоступен. '
             f'Код ответа API: {response.status_code}'
@@ -8,7 +11,10 @@ class HTTPRequestError(Exception):
 
 
 class ParseStatusError(Exception):
+    """Обработчик ошибки."""
+
     def __init__(self, text):
+        """Ошибка обратки ответа."""
         message = (
             f'Парсинг ответа API: {text}'
         )
@@ -16,7 +22,10 @@ class ParseStatusError(Exception):
 
 
 class CheckResponseError(Exception):
+    """Обработчик ошибки."""
+
     def __init__(self, text):
+        """Ошибка ответа."""
         message = (
             f'Проверка ответа API: {text}'
         )
